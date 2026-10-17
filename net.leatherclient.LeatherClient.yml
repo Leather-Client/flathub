@@ -8,26 +8,27 @@ finish-args:
   - --share=ipc
   - --share=network
   - --socket=x11
+  - --socket=pulseaudio
   - --device=dri
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.StatusNotifierWatcher
+  - --env=WEBKIT_DISABLE_COMPOSITING_MODE=1
 
 modules:
   - name: leather-client
     buildsystem: simple
     build-commands:
-      - chmod +x leather-client.AppImage
-      - ./leather-client.AppImage --appimage-extract
-      - rm -f squashfs-root/usr/lib/libwayland-*.so* squashfs-root/usr/lib/libxkbcommon.so* squashfs-root/usr/lib/libxcb-*.so* squashfs-root/usr/lib/libXau.so* squashfs-root/usr/lib/libXdmcp.so*
-      - mkdir -p /app/leather-client /app/bin
-      - cp -a squashfs-root/. /app/leather-client/
-      - printf '#!/bin/sh\nexec /app/leather-client/AppRun "$@"\n' > /app/bin/leather-client
-      - chmod +x /app/bin/leather-client
+      - chmod +x leather-client.AppImage && ./leather-client.AppImage --appimage-extract
+      - cd squashfs-root && rm -f usr/lib/libwayland-*.so* usr/lib/libxkbcommon.so* usr/lib/libxcb-*.so* usr/lib/libXau.so* usr/lib/libXdmcp.so*
+      - mkdir -p /app/leather-client /app/bin && cp -a squashfs-root/. /app/leather-client/
+      - printf '#!/bin/sh\nexec /app/leather-client/AppRun "$@"\n' > /app/bin/leather-client && chmod +x /app/bin/leather-client
       - install -Dm644 net.leatherclient.LeatherClient.desktop /app/share/applications/net.leatherclient.LeatherClient.desktop
       - install -Dm644 net.leatherclient.LeatherClient.metainfo.xml /app/share/metainfo/net.leatherclient.LeatherClient.metainfo.xml
       - install -Dm644 squashfs-root/usr/share/icons/hicolor/512x512/apps/leather-client.png /app/share/icons/hicolor/512x512/apps/net.leatherclient.LeatherClient.png
+      - rm -rf squashfs-root
     sources:
       - type: file
+        only-arches: [x86_64]
         url: https://github.com/Leather-Client/version/releases/download/v1.0.8/leather-client_1.0.8_amd64.AppImage
         sha256: 1bc03a9b69570052f121de0f5b7d4cf2e838ed989c9f45526a476d46d3389f6d
         dest-filename: leather-client.AppImage
