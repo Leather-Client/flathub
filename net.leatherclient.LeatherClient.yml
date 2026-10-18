@@ -1,42 +1,34 @@
 app-id: net.leatherclient.LeatherClient
-runtime: org.freedesktop.Platform
-runtime-version: '26.08'
-sdk: org.freedesktop.Sdk
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
 command: leather-client
-
 finish-args:
   - --share=ipc
   - --share=network
   - --socket=x11
   - --socket=pulseaudio
   - --device=dri
+  - --filesystem=xdg-data/LeatherClient:create
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.StatusNotifierWatcher
   - --env=WEBKIT_DISABLE_COMPOSITING_MODE=1
-
+  - --env=LD_LIBRARY_PATH=/app/lib
 modules:
   - name: leather-client
     buildsystem: simple
     build-commands:
-      - chmod +x leather-client.AppImage && ./leather-client.AppImage --appimage-extract
-      - cd squashfs-root && rm -f usr/lib/libwayland-*.so* usr/lib/libxkbcommon.so* usr/lib/libxcb-*.so* usr/lib/libXau.so* usr/lib/libXdmcp.so*
-      - mkdir -p /app/leather-client /app/bin && cp -a squashfs-root/. /app/leather-client/
-      - printf '#!/bin/sh\nexec /app/leather-client/AppRun "$@"\n' > /app/bin/leather-client && chmod +x /app/bin/leather-client
+      - install -Dm755 leather-client /app/bin/leather-client
+      - mkdir -p '/app/lib/Leather Client'
+      - cp -a libs/. /app/lib/
+      - cp -a resources/. '/app/lib/Leather Client/'
+      - install -Dm644 icon.png /app/share/icons/hicolor/512x512/apps/net.leatherclient.LeatherClient.png
       - install -Dm644 net.leatherclient.LeatherClient.desktop /app/share/applications/net.leatherclient.LeatherClient.desktop
       - install -Dm644 net.leatherclient.LeatherClient.metainfo.xml /app/share/metainfo/net.leatherclient.LeatherClient.metainfo.xml
-      - install -Dm644 squashfs-root/usr/share/icons/hicolor/512x512/apps/leather-client.png /app/share/icons/hicolor/512x512/apps/net.leatherclient.LeatherClient.png
-      - rm -rf squashfs-root
     sources:
-      - type: file
-        only-arches: [x86_64]
-        url: https://github.com/Leather-Client/version/releases/download/v1.0.8/leather-client_1.0.8_amd64.AppImage
-        sha256: 1bc03a9b69570052f121de0f5b7d4cf2e838ed989c9f45526a476d46d3389f6d
-        dest-filename: leather-client.AppImage
-        x-checker-data:
-          type: json
-          url: https://api.github.com/repos/Leather-Client/version/releases/latest
-          version-query: .tag_name | sub("^v"; "")
-          url-query: .assets[] | select(.name == "leather-client_" + $version + "_amd64.AppImage") | .browser_download_url
+      - type: archive
+        url: https://github.com/Leather-Client/version/releases/download/v1.1.0/leather-client-flatpak-1.1.0-x86_64.tar.gz
+        sha256: 7cbcaa6eae8fbddbde11365a39686f60a226986f38b52cc4ca83d643b72a94b0
       - type: file
         path: net.leatherclient.LeatherClient.desktop
       - type: file
